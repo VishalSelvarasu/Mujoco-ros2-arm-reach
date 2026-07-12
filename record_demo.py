@@ -1,10 +1,3 @@
-"""
-Record a GIF of the trained policy performing the UR5e reach task.
-
-Usage:
-    python record_demo.py --model results/sac_reach_model.zip --algo sac
-"""
-
 import argparse
 import sys
 from pathlib import Path
@@ -39,13 +32,24 @@ def main():
     for ep in range(args.episodes):
         obs, _ = env.reset(seed=100 + ep)  # seeds not used in training, for a "fresh" demo
         ep_frames = 0
+        success_frame = None
         for _ in range(200):
             action, _ = model.predict(obs, deterministic=True)
             obs, reward, term, trunc, info = env.step(action)
-            frames.append(env.render())
+            frame = env.render()
+            frames.append(frame)
             ep_frames += 1
-            if trunc or (term and ep_frames >= MIN_FRAMES_PER_EPISODE):
+            if term:
+                success_frame = frame
                 break
+            if trunc:
+                break
+        # Hold the success frame instead of continuing to act -- the
+        # policy was never trained on post-success states (training
+        # episodes end the instant success is detected), so letting it
+        # keep acting there produces visible, meaningless jitter.
+        if success_frame is not None:
+            frames.extend([success_frame] * max(0, MIN_FRAMES_PER_EPISODE - ep_frames))
         if info["success"]:
             successes += 1
         print(f"Episode {ep+1}/{args.episodes}: success={info['success']}, dist={info['distance']:.3f}m")

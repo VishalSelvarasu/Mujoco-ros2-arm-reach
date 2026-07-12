@@ -1,10 +1,3 @@
-"""
-Record a GIF of the trained policy performing the UR5e reach task.
-
-Usage:
-    python record_demo.py --model results/sac_reach_model.zip --algo sac
-"""
-
 import argparse
 import sys
 from pathlib import Path

@@ -1,0 +1,10 @@
+{
+  "PPO": {
+    "success_rate": 0.1,
+    "mean_final_distance_m": 0.1639
+  },
+  "SAC": {
+    "success_rate": 0.95,
+    "mean_final_distance_m": 0.0312
+  }
+}

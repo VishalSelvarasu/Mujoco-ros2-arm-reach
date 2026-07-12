@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Training artifacts (large, regenerate by re-running training scripts)
+results/tb_ppo/
+results/tb_sac/
+results/*.zip
+
+# ROS 2 build artifacts
+ros2_ws/build/
+ros2_ws/install/
+ros2_ws/log/
+
+# OS
+.DS_Store
+models/mujoco_menagerie/

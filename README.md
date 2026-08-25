@@ -65,7 +65,7 @@ python training/train_sac.py --timesteps 600000
 python training/compare_results.py
 ```
 
-Both algorithms train on the same 600k-timestep budget and a fixed `seed=42`, so the comparison below isn't confounded by one algorithm simply getting more data than the other.
+Both algorithms train on the same nominal 600k-timestep budget (PPO's rollout structure means it completes at 602,112 transitions rather than exactly 600,000 — a ~0.35% difference, immaterial to the result but worth being precise about) and a fixed `seed=42`, so the comparison below isn't confounded by one algorithm simply getting more data than the other.
 
 `compare_results.py` runs 20 evaluation episodes for each algorithm, using `self.np_random`-seeded resets — meaning both algorithms are evaluated against the *same* 20 targets, not independently sampled ones.
 
@@ -78,9 +78,9 @@ Both algorithms train on the same 600k-timestep budget and a fixed `seed=42`, so
 
 ![Learning curves](results/learning_curves.png)
 
-I ran this comparison twice. The first pass had two real problems: PPO trained on 300k timesteps against SAC's 600k, and the target-sampling seeding bug above meant the "20 fixed episodes" weren't actually matched between algorithms. Both issues are exactly the kind of thing that makes a comparison look controlled without actually being controlled. I fixed both, retrained PPO to match SAC's budget, and reran the whole evaluation. The result held: PPO landed at 10% again (17.6cm vs the original run's 16.4cm — consistent, not a fluke), while SAC's number shifted slightly (90% vs the original 95%, expected given it's now genuinely a different, previously-unseen set of 20 targets under the fixed seeding). The gap didn't close. That's a stronger result than the first pass, not just a repeated one — it survived a genuine attempt to break it.
+I ran this comparison twice. The first pass had two real problems: PPO trained on 300k timesteps against SAC's 600k, and the target-sampling seeding bug above meant the "20 fixed episodes" weren't actually matched between algorithms. Both issues are exactly the kind of thing that makes a comparison look controlled without actually being controlled. I fixed both, retrained PPO to match SAC's budget, and reran the whole evaluation. The performance gap remained under this corrected, matched-budget evaluation: PPO landed at 10% again (17.6cm vs the original run's 16.4cm), while SAC's number shifted slightly (90% vs the original 95%, expected since it's a different, previously-unseen set of 20 targets under the fixed seeding). The gap didn't close when the original confounds were removed — though with one training seed per algorithm, this shows the gap survived a stricter evaluation protocol, not that it's statistically robust across training randomness. That would need multiple independent training seeds per algorithm.
 
-SAC's advantage comes down to sample efficiency: its replay buffer lets it reuse every transition many times over, while PPO discards each batch after a single update. For a task like this — continuous control, dense reward, no strict on-policy requirement — that difference compounds significantly over training.
+The observed advantage is consistent with SAC's greater sample reuse through its replay buffer — it revisits every transition many times, while PPO discards each batch after a single update. For a task like this — continuous control, dense reward, no strict on-policy requirement — that difference compounds significantly over training.
 
 I checked this wasn't just a training-script artifact by deploying the SAC model through the actual ROS 2 bridge and watching it run live. Episode success rate and final distances in the live deployment closely matched the offline numbers above.
 

@@ -1,6 +1,5 @@
 import sys
 import os
-from pathlib import Path
 
 # Make the project's envs/ package importable. We can't infer this from
 # the file's own location reliably, since colcon copies this file into a
@@ -40,7 +39,13 @@ class MujocoSimNode(Node):
         )
 
         self.timer = self.create_timer(1.0 / SIM_RATE_HZ, self._on_timer)
-        self.joint_names = [f"joint_{i}" for i in range(self.env.n_joints)]
+        # Real UR5e joint names (from the official Menagerie model), not
+        # generic placeholders -- lets this line up with what a real
+        # driver's /joint_states would actually publish.
+        self.joint_names = [
+            "shoulder_pan_joint", "shoulder_lift_joint", "elbow_joint",
+            "wrist_1_joint", "wrist_2_joint", "wrist_3_joint",
+        ]
 
         self.get_logger().info("MuJoCo sim node started, publishing at %.0f Hz" % SIM_RATE_HZ)
 
@@ -80,6 +85,10 @@ class MujocoSimNode(Node):
         msg.pose.position.x = float(self.env.target_pos[0])
         msg.pose.position.y = float(self.env.target_pos[1])
         msg.pose.position.z = float(self.env.target_pos[2])
+        # Orientation is unused here (reach task has no orientation goal),
+        # but an all-zero quaternion is invalid -- ROS expects a valid
+        # unit quaternion, so set identity rotation explicitly.
+        msg.pose.orientation.w = 1.0
         self.target_pub.publish(msg)
 
 

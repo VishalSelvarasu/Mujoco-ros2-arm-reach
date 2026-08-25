@@ -5,10 +5,12 @@
   <version>0.1.0</version>
   <description>
     ROS 2 node that runs a trained MuJoCo RL policy (PPO/SAC) for UR5e
-    reach tasks and exposes it through standard ROS 2 topics, so the
-    policy can be driven the same way a real robot controller would be.
+    reach tasks and exposes it through standard ROS 2 topics. A topic-based
+    split between simulation and inference that could be adapted to real
+    hardware with a suitable command adapter (see project README for
+    current scope and limitations).
   </description>
-  <maintainer email="you@example.com">Your Name</maintainer>
+  <maintainer email="82762526+VishalSelvarasu@users.noreply.github.com">Vishal Selvarasu</maintainer>
   <license>MIT</license>
 
   <depend>rclpy</depend>

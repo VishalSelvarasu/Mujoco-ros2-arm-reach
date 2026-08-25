@@ -65,9 +65,22 @@ class PolicyNode(Node):
 
         self.timer = self.create_timer(1.0 / 50.0, self._on_timer)
 
+    JOINT_ORDER = [
+        "shoulder_pan_joint", "shoulder_lift_joint", "elbow_joint",
+        "wrist_1_joint", "wrist_2_joint", "wrist_3_joint",
+    ]
+
     def _on_joint_state(self, msg: JointState):
-        self.joint_pos = np.array(msg.position[: self.n_joints])
-        self.joint_vel = np.array(msg.velocity[: self.n_joints])
+        # Map by name rather than trusting positional order -- a real
+        # robot driver's /joint_states isn't guaranteed to publish in
+        # this project's internal joint ordering.
+        try:
+            idx = [msg.name.index(j) for j in self.JOINT_ORDER]
+        except ValueError:
+            self.get_logger().warn(f"Unexpected joint names in /joint_states: {msg.name}")
+            return
+        self.joint_pos = np.array([msg.position[i] for i in idx])
+        self.joint_vel = np.array([msg.velocity[i] for i in idx])
         self.have_joint_state = True
 
     def _on_target(self, msg: PoseStamped):

@@ -10,7 +10,7 @@ from stable_baselines3.common.env_util import make_vec_env
 from stable_baselines3.common.callbacks import BaseCallback
 import numpy as np
 import json
-''
+
 RESULTS_DIR = Path(__file__).parent.parent / "results"
 RESULTS_DIR.mkdir(exist_ok=True)
 
@@ -29,7 +29,7 @@ class EpisodeLogger(BaseCallback):
             if len(ep_info_buffer) > 0:
                 mean_reward = np.mean([ep["r"] for ep in ep_info_buffer])
                 mean_len = np.mean([ep["l"] for ep in ep_info_buffer])
-                # 'is_success' is populated because Monitor is wrapped with
+                # 'success' is populated because Monitor is wrapped with
                 # info_keywords=("success",) in make_vec_env below.
                 successes = [ep.get("success") for ep in ep_info_buffer if "success" in ep]
                 success_rate = float(np.mean(successes)) if successes else None

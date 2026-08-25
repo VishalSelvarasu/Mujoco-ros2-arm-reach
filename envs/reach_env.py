@@ -15,12 +15,12 @@ TARGET_BOUNDS = {
     "z": (0.15, 0.55),
 }
 
-SUCCESS_THRESHOLD = 0.03  # meters; end-effector within 3cm counts as reached
+SUCCESS_THRESHOLD = 0.03  # meters; wrist reference point within 3cm counts as reached
 MAX_JOINT_STEP = 0.5      # radians; target offset commanded per RL action
 EPISODE_LEN = 200
 
 # Reset joint configuration, found by grid-searching for the pose that puts
-# the end-effector closest to the center of TARGET_BOUNDS. The model's
+# the wrist reference point closest to the center of TARGET_BOUNDS. The model's
 # qpos=0 "home" pose starts ~0.8m away from every target, which starved
 # training of useful reward signal early on.
 RESET_QPOS = np.array([1.891, 3.766, 2.189, 0.123, 2.034, 1.276])

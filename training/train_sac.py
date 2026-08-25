@@ -53,6 +53,7 @@ def main():
         batch_size=256,
         gamma=0.99,
         tau=0.005,
+        seed=42,
         tensorboard_log=str(RESULTS_DIR / "tb_sac"),
     )
 

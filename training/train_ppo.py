@@ -8,16 +8,15 @@ from envs.reach_env import UR5eReachEnv
 from stable_baselines3 import PPO
 from stable_baselines3.common.env_util import make_vec_env
 from stable_baselines3.common.callbacks import BaseCallback
-from stable_baselines3.common.monitor import Monitor
 import numpy as np
 import json
-
+''
 RESULTS_DIR = Path(__file__).parent.parent / "results"
 RESULTS_DIR.mkdir(exist_ok=True)
 
 
 class EpisodeLogger(BaseCallback):
-    """Logs mean episode reward + success rate periodically for comparison plots."""
+    """Logs mean episode reward, length, and success rate periodically."""
 
     def __init__(self, log_every=2000, verbose=0):
         super().__init__(verbose)
@@ -30,12 +29,18 @@ class EpisodeLogger(BaseCallback):
             if len(ep_info_buffer) > 0:
                 mean_reward = np.mean([ep["r"] for ep in ep_info_buffer])
                 mean_len = np.mean([ep["l"] for ep in ep_info_buffer])
+                # 'is_success' is populated because Monitor is wrapped with
+                # info_keywords=("success",) in make_vec_env below.
+                successes = [ep.get("success") for ep in ep_info_buffer if "success" in ep]
+                success_rate = float(np.mean(successes)) if successes else None
                 self.history.append({
                     "timestep": self.num_timesteps,
                     "mean_reward": float(mean_reward),
                     "mean_ep_length": float(mean_len),
+                    "success_rate": success_rate,
                 })
-                print(f"[PPO] step {self.num_timesteps} | mean_reward {mean_reward:.2f}")
+                sr_str = f"{success_rate*100:.0f}%" if success_rate is not None else "n/a"
+                print(f"[PPO] step {self.num_timesteps} | mean_reward {mean_reward:.2f} | success_rate {sr_str}")
         return True
 
 
@@ -45,7 +50,10 @@ def main():
     parser.add_argument("--n_envs", type=int, default=8)
     args = parser.parse_args()
 
-    env = make_vec_env(UR5eReachEnv, n_envs=args.n_envs)
+    env = make_vec_env(
+        UR5eReachEnv, n_envs=args.n_envs,
+        monitor_kwargs={"info_keywords": ("success",)},
+    )
 
     model = PPO(
         "MlpPolicy",
@@ -55,6 +63,7 @@ def main():
         batch_size=256,
         learning_rate=3e-4,
         gamma=0.99,
+        seed=42,
         tensorboard_log=str(RESULTS_DIR / "tb_ppo"),
     )
 

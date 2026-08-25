@@ -4,7 +4,6 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
 
-import numpy as np
 import imageio
 from envs.reach_env import UR5eReachEnv
 

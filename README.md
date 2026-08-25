@@ -88,6 +88,8 @@ I checked this wasn't just a training-script artifact by deploying the SAC model
 
 *(The red sphere is a visualization only — a coordinate the code tracks internally, not a physical object in the simulation.)*
 
+*Note: PPO and SAC were trained on different budgets (300k vs 600k timesteps), and evaluation targets weren't identically seeded between runs — see Limitations for details. A matched retest is planned.*
+
 ## ROS 2 deployment
 
 ROS 2 launches these nodes using your **system** Python, not the `venv` from Setup above, so the dependencies need to be available there too:

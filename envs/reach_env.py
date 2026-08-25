@@ -75,9 +75,9 @@ class UR5eReachEnv(gym.Env):
 
     def _sample_target(self):
         return np.array([
-            np.random.uniform(*TARGET_BOUNDS["x"]),
-            np.random.uniform(*TARGET_BOUNDS["y"]),
-            np.random.uniform(*TARGET_BOUNDS["z"]),
+            self.np_random.uniform(*TARGET_BOUNDS["x"]),
+            self.np_random.uniform(*TARGET_BOUNDS["y"]),
+            self.np_random.uniform(*TARGET_BOUNDS["z"]),
         ])
 
     def reset(self, seed=None, options=None):
@@ -85,7 +85,7 @@ class UR5eReachEnv(gym.Env):
         mujoco.mj_resetData(self.model, self.data)
 
         # Small random noise around the workspace-centered reset pose.
-        self.data.qpos[: self.n_joints] = RESET_QPOS + np.random.uniform(-0.05, 0.05, self.n_joints)
+        self.data.qpos[: self.n_joints] = RESET_QPOS + self.np_random.uniform(-0.05, 0.05, self.n_joints)
         mujoco.mj_forward(self.model, self.data)
 
         self.target_pos = self._sample_target()
@@ -155,6 +155,7 @@ class UR5eReachEnv(gym.Env):
 
 
 if __name__ == "__main__":
+    from gymnasium.utils.env_checker import check_env
     # Quick smoke test: random actions, confirm no crashes, print shapes.
     env = UR5eReachEnv()
     obs, info = env.reset()
@@ -168,3 +169,9 @@ if __name__ == "__main__":
             break
     print("Ran 50 random steps OK. Total reward:", round(total_reward, 3))
     print("Final distance to target:", round(info["distance"], 3))
+
+    # Gymnasium's own environment checker -- catches API-contract issues
+    # (reset/step signatures, observation bounds, seeding behavior) that
+    # manual testing can easily miss.
+    check_env(env.unwrapped, skip_render_check=True)
+    print("check_env passed with no errors.")
